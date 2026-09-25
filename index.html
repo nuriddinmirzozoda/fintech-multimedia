@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="tg" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Нақши технологияҳои мултимедиявӣ дар соҳаи бонкдорӣ - 3D Edition</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            cyan: '#00f2fe',
+                            blue: '#4facfe',
+                            purple: '#7f00ff',
+                            darkBg: '#080d1a',
+                            glass: 'rgba(15, 23, 42, 0.85)'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #040711;
+            color: #f3f4f6;
+            overflow-x: hidden;
+            perspective: 1000px;
+        }
+
+        /* 3D Glass Card Effect */
+        .glass-card-3d {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 242, 254, 0.25);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 242, 254, 0.15);
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease-out, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .glass-card-3d:hover {
+            border-color: rgba(0, 242, 254, 0.6);
+            box-shadow: 0 25px 50px rgba(0, 242, 254, 0.2), 0 0 30px rgba(127, 0, 255, 0.25);
+        }
+
+        .glass-nav {
+            background: rgba(8, 13, 26, 0.9);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Slide Transitions */
+        .slide-container {
+            display: none;
+            opacity: 0;
+            transform: scale(0.92) translateZ(-50px) rotateX(6deg);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .slide-container.active {
+            display: block;
+            opacity: 1;
+            transform: scale(1) translateZ(0) rotateX(0deg);
+        }
+
+        .slide-container.active .anim-item {
+            animation: fadeIn3D 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeIn3D {
+            0% {
+                opacity: 0;
+                transform: translateY(30px) translateZ(-40px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) translateZ(0);
+            }
+        }
+
+        .slide-container.active .anim-delay-1 { animation-delay: 0.1s; }
+        .slide-container.active .anim-delay-2 { animation-delay: 0.2s; }
+        .slide-container.active .anim-delay-3 { animation-delay: 0.35s; }
+        .slide-container.active .anim-delay-4 { animation-delay: 0.5s; }
+        .slide-container.active .anim-delay-5 { animation-delay: 0.65s; }
+
+        .slide-container.active .bar-fill {
+            animation: fillProgress 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation-delay: 0.4s;
+        }
+
+        @keyframes fillProgress {
+            from { width: 0%; }
+        }
+
+        .progress-bar-inner {
+            transition: width 0.1s linear;
+        }
+
+        @keyframes float3D {
+            0%, 100% { transform: translateY(0) rotateY(0deg); }
+            50% { transform: translateY(-10px) rotateY(6deg); }
+        }
+        .animate-float-3d {
+            animation: float3D 5s ease-in-out infinite;
+            transform-style: preserve-3d;
+        }
+
+        .explanation-box {
+            background: rgba(10, 16, 31, 0.95);
+            border-left: 4px solid #00f2fe;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            transform-style: preserve-3d;
+        }
+
+        .video-frame-3d {
+            position: relative;
+            width: 100%;
+            height: 280px;
+            background: #090d16;
+            border-radius: 18px;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid rgba(0, 150, 255, 0.35);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 100, 255, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transform-style: preserve-3d;
+        }
+
+        .video-content {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+            filter: brightness(0.85);
+        }
+
+        .play-btn-overlay {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: #ffcc00;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(255, 204, 0, 0.7);
+            cursor: pointer;
+            z-index: 5;
+            transition: transform 0.25s ease;
+        }
+
+        .play-btn-overlay:hover {
+            transform: scale(1.1);
+        }
+
+        .play-icon {
+            width: 0;
+            height: 0;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            border-left: 16px solid #000000;
+            margin-left: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between select-none relative overflow-y-auto">
+
+    <!-- Canvas Canvas Background -->
+    <canvas id="particleCanvas" class="fixed top-0 left-0 w-full h-full pointer-events-none z-0"></canvas>
+
+    <!-- Header Navigation -->
+    <header class="glass-nav fixed top-0 left-0 w-full z-40 px-4 md:px-8 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-400 to-purple-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-cyan-500/30">
+                <i class="fa-solid fa-cube"></i>
+            </div>
+            <div>
+                <h1 class="text-sm md:text-base font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-teal-300 to-purple-400">
+                    FINTECH MULTIMEDIA 3D
+                </h1>
+                <p class="text-xs text-gray-400 hidden sm:block">Муаррифии интерактивӣ ва аёнии 3D</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 md:gap-4">
+            <span id="slideCounter" class="text-xs md:text-sm font-semibold px-3 py-1.5 rounded-full bg-slate-900 border border-cyan-500/40 text-cyan-400">
+                Слайди 1 / 12
+            </span>
+
+            <button id="btnOverview" title="Намоиши умумӣ" class="p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-gray-300 hover:text-white transition border border-slate-700">
+                <i class="fa-solid fa-border-all"></i>
+            </button>
+
+            <button id="btnAutoplay" title="Гузариши худкор" class="p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-gray-300 hover:text-white transition border border-slate-700">
+                <i id="autoplayIcon" class="fa-solid fa-play"></i>
+            </button>
+
+            <button id="btnFullscreen" title="Реҷими пурра" class="p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-gray-300 hover:text-white transition border border-slate-700">
+                <i class="fa-solid fa-expand"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="relative z-10 pt-20 pb-24 px-4 md:px-12 max-w-7xl mx-auto w-full flex-grow flex flex-col justify-center">
+
+        <div class="w-full bg-slate-900/80 h-1.5 rounded-full mb-4 overflow-hidden border border-slate-800">
+            <div id="autoplayProgress" class="progress-bar-inner bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 h-full w-0"></div>
+        </div>
+
+        <!-- SLIDE 1 -->
+        <div class="slide-container active" data-slide="1">
+            <div class="glass-card-3d rounded-3xl p-6 md:p-10 border border-cyan-500/30">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="anim-item anim-delay-1 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold uppercase tracking-wider">
+                            <i class="fa-solid fa-bolt"></i> Иноватсияи Молиявӣ
+                        </div>
+                        <h2 class="anim-item anim-delay-2 text-3xl md:text-5xl font-extrabold leading-tight">
+                            Нақши <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-teal-300 to-purple-500">Технологияҳои Мултимедиявӣ</span> дар Соҳаи Бонкдорӣ
+                        </h2>
+                        <p class="anim-item anim-delay-3 text-gray-300 text-base md:text-lg leading-relaxed">
+                            Гузариш аз бонки анъанавии коғазӣ ба экосистемаи рақамии мултимедиявӣ. Чӣ тавр видео, аудио, графика ва зеҳни сунъӣ таҷрибаи мизоҷонро куллан тағйир медиҳанд.
+                        </p>
+                        
+                        <div class="anim-item anim-delay-4 grid grid-cols-2 sm:grid-cols-3 gap-4 pt-2">
+                            <div class="p-4 rounded-2xl bg-slate-800/50 border border-slate-700/50 text-center">
+                                <div class="text-2xl font-bold text-cyan-400">92%</div>
+                                <div class="text-xs text-gray-400">Қаноатмандии мизоҷон</div>
+                            </div>
+                            <div class="p-4 rounded-2xl bg-slate-800/50 border border-slate-700/50 text-center">
+                                <div class="text-2xl font-bold text-purple-400">3.5x</div>
+                                <div class="text-xs text-gray-400">Суръати хизматрасонӣ</div>
+                            </div>
+                            <div class="p-4 rounded-2xl bg-slate-800/50 border border-slate-700/50 text-center col-span-2 sm:col-span-1">
+                                <div class="text-2xl font-bold text-emerald-400">24/7</div>
+                                <div class="text-xs text-gray-400">Дастрасии фаврӣ</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-5 flex justify-center anim-item anim-delay-5">
+                        <div class="relative w-full max-w-sm animate-float-3d">
+                            <div class="glass-card-3d relative rounded-3xl p-6 border border-cyan-500/30 text-center space-y-4 shadow-2xl">
+                                <div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-tr from-cyan-400 to-blue-600 flex items-center justify-center text-4xl shadow-lg shadow-cyan-500/40">
+                                    <i class="fa-solid fa-microchip text-white"></i>
+                                </div>
+                                <h3 class="text-2xl font-bold text-white">Экосистемаи Рақамӣ</h3>
+                                <p class="text-xs text-gray-300 leading-relaxed">
+                                    Омезиши бароҳати технологияҳои баланд бо хизматрасониҳои молиявии бехатар ва фаҳмо.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 p-5 rounded-2xl explanation-box border-l-4 border-cyan-400 anim-item anim-delay-5">
+                    <div class="flex items-center gap-2 text-cyan-400 font-bold text-sm mb-1">
+                        <i class="fa-solid fa-lightbulb"></i> Шарҳи муфассал ва консепсияи слайд:
+                    </div>
+                    <p class="text-xs md:text-sm text-gray-300 leading-relaxed">
+                        Дар ин слайд муқаддимаи умумии дигаргуншавии бонкдорӣ тавассути мултимедия пешниҳод шудааст. Мақсади асосӣ — нишон додани он, ки бонкдории замонавӣ аз биноҳои оддӣ ба муҳити рақамӣ ва мултимедиявӣ табдил ёфтааст.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2 -->
+        <div class="slide-container" data-slide="2">
+            <div class="glass-card-3d rounded-3xl p-6 md:p-10 border border-cyan-500/30 space-y-6">
+                <div class="border-b border-slate-700/60 pb-4 anim-item anim-delay-1">
+                    <span class="text-xs font-semibold text-cyan-400 tracking-wider uppercase">Консепсияи Базавӣ</span>
+                    <h2 class="text-2xl md:text-4xl font-bold mt-1">Асосҳои Назариявии Мултимедия дар Финанс</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="anim-item anim-delay-2 glass-card-3d rounded-2xl p-5 border border-slate-700/50 space-y-3">
+                        <div class="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-video"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white">1. Видеоконтент</h3>
+                        <p class="text-xs text-gray-300 leading-relaxed">Машваратҳои видеоии мустақим, роликҳои кӯтоҳи таълимӣ ва симулятсияҳои тарзи истифодаи маҳсулоти бонкӣ.</p>
+                    </div>
+
+                    <div class="anim-item anim-delay-3 glass-card-3d rounded-2xl p-5 border border-slate-700/50 space-y-3">
+                        <div class="w-12 h-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-chart-pie"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white">2. Графика ва Инфографика</h3>
+                        <p class="text-xs text-gray-300 leading-relaxed">Диаграммаҳои динамикии хароҷот, графики тағирёбии асъор ва визуализатсияи даромаднокии пасандозҳо.</p>
+                    </div>
+
+                    <div class="anim-item anim-delay-4 glass-card-3d rounded-2xl p-5 border border-slate-700/50 space-y-3">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-headset"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white">3. Аудио & Синтези Овоз</h3>
+                        <p class="text-xs text-gray-300 leading-relaxed">Ассистентҳои овозӣ бо зеҳни сунъӣ, огоҳиномаҳои аудиоӣ ва тасдиқи биометрии овозӣ.</p>
+                    </div>
+
+                    <div class="anim-item anim-delay-5 glass-card-3d rounded-2xl p-5 border border-slate-700/50 space-y-3">
+                        <div class="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-hand-pointer"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white">4. Интерактивият</h3>
+                        <p class="text-xs text-gray-300 leading-relaxed">Калкуляторҳои интерактивӣ, экрани пайвасти тач-скрин дар филиалҳо ва шаклҳои электронии зуд-амал.</p>
+                    </div>
+                </div>
+
+                <div class="p-5 rounded-2xl explanation-box border-l-4 border-cyan-400 anim-item anim-delay-5">
+                    <div class="flex items-center gap-2 text-cyan-400 font-bold text-sm mb-1">
+                        <i class="fa-solid fa-lightbulb"></i> Шарҳи муфассал ва консепсияи слайд:
+                    </div>
+                    <p class="text-xs md:text-sm text-gray-300 leading-relaxed">
+                        Мултимедия дар соҳаи молия аз 4 сутуни асосӣ иборат аст: Видео, Графика, Аудио ва Интерактивият.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3 -->
+        <div class="slide-container" data-slide="3">
+            <div class="glass-card-3d rounded-3xl p-6 md:p-10 border border-cyan-500/30 space-y-6">
+                <div class="border-b border-slate-700/60 pb-4 anim-item anim-delay-1">
+                    <span class="text-xs font-semibold text-purple-400 tracking-wider uppercase">Инқилоб дар Филиалҳо</span>
+                    <h2 class="text-2xl md:text-4xl font-bold mt-1">Бонкдории Видеоӣ ва Терминалҳои VTM</h2>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    <div class="space-y-4 anim-item anim-delay-2">
+                        <h3 class="text-xl font-bold text-cyan-400">VTM (Video Teller Machine) чист?</h3>
+                        <p class="text-sm text-gray-300 leading-relaxed">
+                            Ин насли нави банкоматҳо мебошад, ки бо экранҳои мултимедиявии HD ва алоқаи дуҷонибаи видеоӣ бо оператори дурдаст муҷаҳҳаз гардидаанд.
+                        </p>
+                        
+                        <ul class="space-y-3 text-xs md:text-sm text-gray-300">
+                            <li class="flex items-start gap-3"><i class="fa-solid fa-circle-check text-cyan-400 mt-1"></i> <span><strong>Интишори фаврии корт:</strong> Чопи корти бонкӣ дар ҷойи ҳодиса дар давоми 2 дақиқа.</span></li>
+                            <li class="flex items-start gap-3"><i class="fa-solid fa-circle-check text-cyan-400 mt-1"></i> <span><strong>Сканеркунии ҳуҷҷатҳо:</strong> Тасдиқи биометрӣ ва хондани паспорти шаҳрванд.</span></li>
+                            <li class="flex items-start gap-3"><i class="fa-solid fa-circle-check text-cyan-400 mt-1"></i> <span><strong>Машварати 24/7:</strong> Алоқаи мустақими видеоӣ бо мутахассис дар дилхоҳ вақти шабонарӯз.</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="glass-card-3d rounded-2xl p-6 border border-purple-500/30 bg-slate-900/80 space-y-4 anim-item anim-delay-3">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                            <span class="text-xs font-semibold text-gray-300 flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span> Live VTM Connect
+                            </span>
+                            <span class="text-xs bg-purple-500/20 text-purple-300 px-2.5 py-1 rounded-full font-medium">Онлайн</span>
+                        </div>
+                        <div class="aspect-video bg-slate-800/90 rounded-xl flex flex-col items-center justify-center relative overflow-hidden border border-slate-700 p-4 text-center">
+                            <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center mb-2 shadow-lg">
+                                <i class="fa-solid fa-user-tie text-2xl text-white"></i>
+                            </div>
+                            <span class="text-xs text-cyan-300 font-bold">Мутахассиси Кампания: Дилшод Раҳимов</span>
+                            <p class="text-xs text-gray-200 mt-2 font-medium bg-slate-900/80 p-2.5 rounded-lg border border-slate-700/80 italic">
+                                «Хуш омадед ба хидматрасонии интерактивӣ! Маҷмӯи пешниҳодҳои муштарии мо роҳи ҳалли беҳтарини молиявиро омода кардааст.»
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-5 rounded-2xl explanation-box border-l-4 border-cyan-400 anim-item anim-delay-4">
+                    <div class="flex items-center gap-2 text-cyan-400 font-bold text-sm mb-1">
+                        <i class="fa-solid fa-lightbulb"></i> Шарҳи муфассал ва консепсияи слайд:
+                    </div>
+                    <p class="text-xs md:text-sm text-gray-300 leading-relaxed">
+                        VTM (Video Teller Machine) – марҳилаи олии истифодаи мултимедия дар филиалҳои муосир аст.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4 -->
+        <div class="slide-container" data-slide="4">
+            <div class="glass-card-3d rounded-3xl p-6 md:p-10 border border-cyan-500/30 space-y-6">
+                <div class="border-b border-slate-700/60 pb-4 anim-item anim-delay-1">
+                    <span class="text-xs font-semibold text-emerald-400 tracking-wider uppercase">Муҳити Мобилӣ</span>
+                    <h2 class="text-2xl md:text-4xl font-bold mt-1">Мобил-Бонкинг ва Визуализатсияи Хароҷот</h2>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                    <div class="lg:col-span-6 space-y-5 anim-item anim-delay-2">
+                        <h3 class="text-xl font-bold text-white">Визуализатсияи Фоизии Хароҷот (UI/UX)</h3>
+                        <p class="text-sm text-gray-300 leading-relaxed">
+                            Нишондиҳандаҳои хароҷоти моҳона бо рангҳои махсус ва пешрафти фоизӣ.
+                        </p>
+
+                        <div class="space-y-4 pt-2">
+                            <div class="space-y-1.5">
+                                <div class="flex justify-between text-xs font-semibold text-gray-200">
+                                    <span class="flex items-center gap-2"><i class="fa-solid fa-utensils text-amber-400"></i> Хӯрок ва Ресторанҳо</span>
+                                    <span class="text-amber-400 font-bold">1,750 TJS (50%)</span>
+                                </div>
+                                <div class="w-full bg-slate-800 h-4 rounded-full overflow-hidden border border-slate-700 relative">
+                                    <div class="bar-fill bg-gradient-to-r from-amber-500 to-amber-300 h-full rounded-full" style="width: 50%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <div class="flex justify-between text-xs font-semibold text-gray-200">
+                                    <span class="flex items-center gap-2"><i class="fa-solid fa-car text-cyan-400"></i> Транспорт ва Сӯзишворӣ</span>
+                                    <span class="text-cyan-400 font-bold">1,050 TJS (30%)</span>
+                                </div>
+                                <div class="w-full bg-slate-800 h-4 rounded-full overflow-hidden border border-slate-700 relative">
+                                    <div class="bar-fill bg-gradient-to-r from-cyan-500 to-blue-400 h-full rounded-full" style="width: 30%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <div class="flex justify-between text-xs font-semibold text-gray-200">
+                                    <span class="flex items-center gap-2"><i class="fa-solid fa-bag-shopping text-purple-400"></i> Харидҳо ва Шопинг</span>
+                                    <span class="text-purple-400 font-bold">700 TJS (20%)</span>
+                                </div>
+                                <div class="w-full bg-slate-800 h-4 rounded-full overflow-hidden border border-slate-700 relative">
+                                    <div class="bar-fill bg-gradient-to-r from-purple-500 to-pink-500 h-full rounded-full" style="width: 20%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-6 glass-card-3d rounded-2xl p-6 border border-emerald-500/30 flex flex-col items-center justify-center anim-item anim-delay-3">
+                        <h4 class="text-sm font-semibold text-gray-200 mb-6">Диаграммаи Умумии Хароҷот</h4>
+                        <div class="relative w-52 h-52 rounded-full border-[12px] border-amber-400 border-t-cyan-400 border-r-purple-500 flex items-center justify-center shadow-xl">
+                            <div class="text-center">
+                                <span class="text-xs text-gray-400 block">Ҷамъи хароҷот</span>
+                                <div class="text-2xl font-bold text-white mt-1">3,500 TJS</div>
+                                <span class="text-[10px] text-emerald-400 font-semibold mt-1 block">100% Буҷет</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-5 rounded-2xl explanation-box border-l-4 border-cyan-400 anim-item anim-delay-4">
+                    <div class="flex items-center gap-2 text-cyan-400 font-bold text-sm mb-1">
+                        <i class="fa-solid fa-lightbulb"></i> Шарҳи муфассал ва консепсияи слайд:
+                    </div>
+                    <p class="text-xs md:text-sm text-gray-300 leading-relaxed">
+                        Визуализатсияи маълумот ва хароҷот дар барномаҳои мобилӣ ба корбарон имкон медиҳад, ки буҷети худро беҳтар назорат кунанд.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5 -->
+        <div class="slide-container" data-slide="5">
+            <div class="glass-card-3d rounded-3xl p-6 md:p-10 border border-cyan-500/30 space-y-6">
+                <div class="border-b border-slate-700/60 pb-4 anim-item anim-delay-1">
+                    <span class="text-xs font-semibold text-cyan-400 tracking-wider uppercase">Интеллекти Сунъӣ ва Муошират</span>
+                    <h2 class="text-2xl md:text-4xl font-bold mt-1">Чат-Ботҳо ва Ассистентҳои Овозӣ</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4 anim-item anim-delay-2">
+                        <div class="p-5 rounded-2xl bg-slate-800/50 border border-slate-700 space-y-2">
+                            <div class="flex items-center gap-3 text-cyan-400 font-semibold text-lg">
+                                <i class="fa-solid fa-robot text-2xl"></i> AI Video Avatar
+                            </div>
+                            <p class="text-xs text-gray-300 leading-relaxed">
+                                Истифодаи аватарҳои мултимедивии сунъӣ (Digital Humans) барои ҷавоб додан ба саволҳои мизоҷон бо симо ва овози воқеӣ.
+                            </p>
+                        </div>
+
+                        <div class="p-5 rounded-2xl bg-slate-800/50 border border-slate-700 space-y-2">
+                            <div class="flex items-center gap-3 text-purple-400 font-semibold text-lg">
+                                <i class="fa-solid fa-microphone-lines text-2xl"></i> Voice Banking
+                            </div>
+                            <p class="text-xs text-gray-300 leading-relaxed">
+                                Иҷрои фармонҳои молиявӣ тавассути овоз: «Сомон, ба корти фарзандам 100 сомонӣ интиқол деҳ».
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="glass-card-3d rounded-2xl p-4 border border-cyan-500/30 flex flex-col justify-between h-80 anim-item anim-delay-3">
+                        <div class="flex items-center gap-2 border-b border-slate-700 pb-2">
+                            <div class="w-3 h-3 rounded-full bg-emerald-400"></div>
+                            <span class="text-xs font-bold text-white">Ассистенти Виртуалӣ (AI)</span>
+                        </div>
+                        <div class="space-y-3 my-auto overflow-y-auto pr-1">
+                            <div class="bg-slate-800 p-3 rounded-xl rounded-tl-none text-xs text-gray-200 max-w-[85%]">
+                                Ассалому алайкум! Чӣ тавр метавонам ба шумо дар бораи пасандозҳо машварат диҳам?
+                            </div>
+                            <div class="bg-cyan-600/40 border border-cyan-500/30 p-3 rounded-xl rounded-tr-none text-xs text-white max-w-[85%] ml-auto">
+                                Мехоҳам фоизи пасандози "Солона"-ро донам.
+                            </div>
+                            <div class="bg-slate-800 p-3 rounded-xl rounded-tl-none text-xs text-gray-200 max-w-[85%]">
+                                Меъёри солона 16% аст. Мисоли видеоиро тамошо мекунед?
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-5 rounded-2xl explanation-box border-l-4 border-cyan-400 anim-item anim-delay-4">
+                    <div class="flex items-center gap-2 text-cyan-400 font-bold text-sm mb-1">
+                        <i class="fa-solid fa-lightbulb"></i> Шарҳи муфассал ва консепсияи слайд:
+                    </div>
+                    <p class="text-xs md:text-sm text-gray-300 leading-relaxed">
+                        Чат-ботҳо ва ассистентҳои овозӣ имкон медиҳанд, ки хизматрасониҳо 24 соат бе танаффус пешниҳод гарданд.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6 -->
+        <div class="slide-container" data-slide="6">
+            <div class="glass-card-3d rounded-3xl p-6 md:p-10 border border-cyan-500/30 space-y-6">
+                <div class="border-b border-slate-700/60 pb-4 anim-item anim-delay-1">
+                    <span class="text-xs font-semibold text-red-400 tracking-wider uppercase">Бехатарӣ ва Муҳофизат</span>
+                    <h2 class="text-2xl md:text-4xl font-bold mt-1">Биометрия ва Бехатарии Мултимедиявӣ</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="glass-card-3d p-6 rounded-2xl border border-slate-700 space-y-3 text-center anim-item anim-delay-2">
+                        <div class="w-16 h-16 mx-auto rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-3xl shadow-lg">
+                            <i class="fa-solid fa-face-smile-beam"></i>
+                        </div>
+                        <h3 class="font-bold text-white text-base">3D Face Recognition</h3>
+                        <p class="text-xs text-gray-300 leading-relaxed">Анализи сеандозаи чеҳра тавассути камераҳои мултимедиавӣ барои тасдиқи амалиёт дар сонияҳо.</p>
+                    </div>
+
+                    <div class="glass-card-3d p-6 rounded-2xl border border-slate-700 space-y-3 text-center anim-item anim-delay-3">
+                        <div class="w-16 h-16 mx-auto rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-3xl shadow-lg">
+                            <i class="fa-solid fa-wave-square"></i>
+                        </div>
+                        <h3 class="font-bold text-white text-base">Voice Print Authentication</h3>
+                        <p class="text-xs text-gray-300 leading-relaxed">Шинохти мизоҷ аз рӯи басомади беназири овоз ҳангоми занг زни ба маркази алоқа.</p>
+                    </div>
+
+                    <div class="glass-card-3d p-6 rounded-2xl border border-slate-700 space-y-3 text-center anim-item anim-delay-4">
+                        <div class="w-16 h-16 mx-auto rounded-full bg-red-500/20 text-red-400 flex items-center justify-center text-3xl shadow-lg">
+                            <i class="fa-solid fa-eye"></i>
+                        </div>
+                        <h3 class="font-bold text-white text-base">AI Video Analytics</h3>
+                        <p class="text-xs text-gray-300 leading-relaxed">Камераҳои CCTV бо зеҳни сунъӣ барои муайян кардани рафтори муштабҳа дар филиалҳо.</p>
+                    </div>
+                </div>
+
+                <div class="p-5 rounded-2xl explanation-box border-l-4 border-cyan-400 anim-item anim-delay-5">
+                    <div class="flex items-center gap-2 text-cyan-400 font-bold text-sm mb-1">
+                        <i class="fa-solid fa-lightbulb"></i> Шарҳи муфассал ва консепсияи слайд:
+                    </div>
+                    <p class="text-xs md:text-sm text-gray-300 leading-relaxed">
+                        Шинохти чеҳра дар формати 3D ва изи овозӣ (Voice Print) имкон медиҳанд, ки танҳо соҳиби аслии ҳисоб ба маблағҳо дастрасӣ пайдо кунад.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7 -->
+        <div class="slide-container" data-slide="7">
+            <div class="glass-card-3d rounded-3xl p-6 md:p-10 border border-cyan-500/30 space-y-6">
+                <div class="border-b border-slate-700/60 pb-4 anim-item anim-delay-1">
+                    <span class="text-xs font-semibold text-amber-400 tracking-wider uppercase">Пешбурди Маҳсулот</span>
+                    <h2 class="text-2xl md:text-4xl font-bold mt-1">Маркетинги Мултимедиявӣ ва Digital Signage</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div class="space-y-4 anim-item anim-delay-2">
+                        <h3 class="text-xl font-bold text-white">Экранҳои Интерактивии Филиалҳо</h3>
+                        <p class="text-sm text-gray-300 leading-relaxed">
+                            Гузариш аз плакатҳои коғазии фарсуда ба панелҳои рақамии интерактивӣ (Digital Signage), ки муҳтаворо вобаста ба вақт тағйир медиҳанд.
+                        </p>
+                        <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700 space-y-2 text-xs">
+                            <div class="flex items-center justify-between text-cyan-400 font-semibold">
+                                <span><i class="fa-solid fa-bolt mr-2"></i> Афзоиши Фурӯш</span>
+                                <span class="text-base font-bold">+45%</span>
+                            </div>
+                            <p class="text-gray-300">Роликҳои кӯтоҳи видеоӣ дар толори интизорӣ таваҷҷуҳи мизоҷонро ҷалб мекунанд.</p>
+                        </div>
+                    </div>
+
+                    <div class="anim-item anim-delay-3">
+                        <div class="video-frame-3d">
+                            <img src="images/banner.jpg" alt="Намоиши муҳтаво" class="video-content" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1551836022-d5d88e9218df?q=80&w=800&auto=format&fit=crop';">
+                            <div class="play-btn-overlay">
+                                <div class="play-icon"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-5 rounded-2xl explanation-box border-l-4 border-cyan-400 anim-item anim-delay-4">
+                    <div class="flex items-center gap-2 text-cyan-400 font-bold text-sm mb-1">
+                        <i class="fa-solid fa-lightbulb"></i> Шарҳи муфассал ва консепсияи слайд:
+                    </div>
+                    <p class="text-xs md:text-sm text-gray-300 leading-relaxed">
+                        Маркетинги мултимедиявӣ тавассути Digital Signage самаранокии фурӯши маҳсулоти бонкиро 45% зиёд мекунад.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8 -->
+        <div class="slide-container" data-slide="8">
+            <div class="glass-card-3d rounded-3xl p-6 md:p-10 border border-cyan-500/30 space-y-6">
+                <div class="border-b border-slate-700/60 pb-4 anim-item anim-delay-1">
+                    <span class="text-xs font-semibold text-indigo-400 tracking-wider uppercase">Омӯзиши Персонал</span>
+                    <h2 class="text-2xl md:text-4xl font-bold mt-1">Омӯзиши Кормандон ва Симуляторҳои VR/AR</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <div class="space-y-4 anim-item anim-delay-2">
+                        <div class="p-5 rounded-xl bg-slate-800/60 border border-slate-700 space-y-2">
+                            <h4 class="font-bold text-cyan-400 text-base flex items-center gap-2"><i class="fa-solid fa-vr-cardboard"></i> Симулятсияи VR</h4>
+                            <p class="text-xs text-gray-300 leading-relaxed">Кормандони навкор дар айнакҳои VR муошират бо мизоҷони мураккабро машқ мекунанд.</p>
+                        </div>
+                        <div class="p-5 rounded-xl bg-slate-800/60 border border-slate-700 space-y-2">
+                            <h4 class="font-bold text-purple-400 text-base flex items-center gap-2"><i class="fa-solid fa-layer-group"></i> Воқеияти Афзоянда (AR)</h4>
+                            <p class="text-xs text-gray-300 leading-relaxed">Дастурамалҳои интерактивӣ дар болои таҷҳизоти бонкӣ ҳангоми таъмири банкоматҳо.</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-card-3d p-6 rounded-2xl border border-indigo-500/30 text-center space-y-3 anim-item anim-delay-3">
+                        <div class="w-20 h-20 mx-auto rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-4xl shadow-lg">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white">Омодасозии Сарреъ</h3>
+                        <p class="text-xs text-gray-300 leading-relaxed">
+                            Суръати адаптатсияи кормандони нав 3 баробар тезтар гардида, хатогиҳо 70% кам мешаванд.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="p-5 rounded-2xl explanation-box border-l-4 border-cyan-400 anim-item anim-delay-4">
+                    <div class="flex items-center gap-2 text-cyan-400 font-bold text-sm mb-1">
+                        <i class="fa-solid fa-lightbulb"></i> Шарҳи муфассал ва консепсияи слайд:
+                    </div>
+                    <p class="text-xs md:text-sm text-gray-300 leading-relaxed">
+                        Воқеияти виртуалӣ (VR) ва афзоянда (AR) раванди омӯзиши кормандони бонкиро бе расонидани хисорот ба мизоҷони воқеӣ ташкил медиҳанд.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9 -->
+        <div class="slide-container" data-slide="9">
+            <div class="glass-card-3d rounded-3xl p-6 md:p-10 border border-cyan-500/30 space-y-6">
+                <div class="border-b border-slate-700/60 pb-4 anim-item anim-delay-1">
+                    <span class="text-xs font-semibold text-cyan-400 tracking-wider uppercase">Таҳлили Муқоисавӣ</span>
+                    <h2 class="text-2xl md:text-4xl font-bold mt-1">Муқоисаи Бонки Анъанавӣ ва Мултимедиявӣ</h2>
+                </div>
+
+                <div class="overflow-x-auto anim-item anim-delay-2">
+                    <table class="w-full text-left border-collapse text-xs md:text-sm">
+                        <thead>
+                            <tr class="border-b border-slate-700 text-cyan-400">
+                                <th class="p-4">Меъёр / Нишондиҳанда</th>
+                                <th class="p-4 bg-red-950/20 rounded-t-lg">Бонки Анъанавӣ (Кӯҳна)</th>
+                                <th class="p-4 bg-emerald-950/20 rounded-t-lg">Бонки Мултимедиавии Муосир</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800 text-gray-300">
+                            <tr>
+                                <td class="p-4 font-semibold">Муошират бо мизоҷ</td>
+                                <td class="p-4">Ҳузурии физикӣ, коғазбозӣ, навбат</td>
+                                <td class="p-4 text-emerald-400 font-medium">Видео-чат, VTM, Мобилӣ, AI-Ассистент</td>
+                            </tr>
+                            <tr>
+                                <td class="p-4 font-semibold">Вақти иҷрои амалиёт</td>
+                                <td class="p-4">15 - 45 дақиқа</td>
+                                <td class="p-4 text-emerald-400 font-medium">1 - 3 дақиқа (Фаврӣ)</td>
+                            </tr>
+                            <tr>
+                                <td class="p-4 font-semibold">Шарҳи хизматрасониҳо</td>
+                                <td class="p-4">Брошюраҳои коғазӣ ва матни дароз</td>
+                                <td class="p-4 text-emerald-400 font-medium">Инфографика, видеоҳо ва калкулятор</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="p-5 rounded-2xl explanation-box border-l-4 border-cyan-400 anim-item anim-delay-3">
+                    <div class="flex items-center gap-2 text-cyan-400 font-bold text-sm mb-1">
+                        <i class="fa-solid fa-lightbulb"></i> Шарҳи муфассал ва консепсияи слайд:
+                    </div>
+                    <p class="text-xs md:text-sm text-gray-300 leading-relaxed">
+                        Ҷадвали муқоисавӣ ба таври аён бартарии бонки мултимедивиро нисбат ба бонки анъанавӣ нишон медиҳад.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10 -->
+        <div class="slide-container" data-slide="10">
+            <div class="glass-card-3d rounded-3xl p-6 md:p-10 border border-cyan-500/30 space-y-6">
+                <div class="border-b border-slate-700/60 pb-4 anim-item anim-delay-1">
+                    <span class="text-xs font-semibold text-purple-400 tracking-wider uppercase">Ояндабинӣ ва Эволятсия</span>
+                    <h2 class="text-2xl md:text-4xl font-bold mt-1">Дурнамо ва Ояндаи Мултимедия дар Финанс</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-card-3d p-6 rounded-2xl border border-purple-500/30 space-y-3 anim-item anim-delay-2">
+                        <div class="w-14 h-14 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-3xl shadow-lg">
+                            <i class="fa-solid fa-cubes"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white">Metaverse Banking</h3>
+                        <p class="text-xs text-gray-300 leading-relaxed">
+                            Оҷонсиҳо ва филиалҳои бонкӣ дар фазои виртуалии Metaverse. Мизоҷон тавассути аватарҳои худ метавонанд ворид шаванд.
+                        </p>
+                    </div>
+
+                    <div class="glass-card-3d p-6 rounded-2xl border border-cyan-500/30 space-y-3 anim-item anim-delay-3">
+                        <div class="w-14 h-14 rounded-2xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-3xl shadow-lg">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white">Hyper-Personalization бо AI</h3>
+                        <p class="text-xs text-gray-300 leading-relaxed">
+                            Технологияҳои мултимедиявӣ, ки контент ва интерфейсро вобаста ба кайфияти мизоҷ тағйир медиҳанд.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="p-5 rounded-2xl explanation-box border-l-4 border-cyan-400 anim-item anim-delay-4">
+                    <div class="flex items-center gap-2 text-cyan-400 font-bold text-sm mb-1">
+                        <i class="fa-solid fa-lightbulb"></i> Шарҳи муфассал ва консепсияи слайд:
+                    </div>
+                    <p class="text-xs md:text-sm text-gray-300 leading-relaxed">
+                        Ояндаи бонкдорӣ бо фазои Metaverse ва гипер-персонализатсияи AI сахт алоқаманд аст.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11 -->
+        <div class="slide-container" data-slide="11">
+            <div class="glass-card-3d rounded-3xl p-6 md:p-10 border border-cyan-500/30 space-y-6">
+                <div class="border-b border-slate-700/60 pb-4 text-center anim-item anim-delay-1">
+                    <span class="text-xs font-semibold text-emerald-400 tracking-wider uppercase">Охири Мавзӯъ</span>
+                    <h2 class="text-2xl md:text-4xl font-bold mt-1">Хулоса ва Тавсияҳои Амалӣ</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 anim-item anim-delay-2">
+                    <div class="p-5 rounded-2xl bg-slate-800/60 border border-slate-700 space-y-2">
+                        <span class="text-cyan-400 font-bold text-base block">1. Сармоягузорӣ ба UX/UI</span>
+                        <p class="text-xs text-gray-300 leading-relaxed">Содда ва фаҳмо сохтани муҳити визуалӣ барои тамоми гурӯҳҳои синну соли мизоҷон.</p>
+                    </div>
+                    <div class="p-5 rounded-2xl bg-slate-800/60 border border-slate-700 space-y-2">
+                        <span class="text-purple-400 font-bold text-base block">2. Амнияти Биометрӣ</span>
+                        <p class="text-xs text-gray-300 leading-relaxed">Ҷорӣ намудани стандартҳои баландтарини муҳофизати мултимедиявӣ ва сунъӣ.</p>
+                    </div>
+                    <div class="p-5 rounded-2xl bg-slate-800/60 border border-slate-700 space-y-2">
+                        <span class="text-emerald-400 font-bold text-base block">3. Омӯзиши Мулоим</span>
+                        <p class="text-xs text-gray-300 leading-relaxed">Пайваста омӯзонидани мизоҷон ба воситаи роликҳои кӯтоҳи таълимии аниматсионӣ.</p>
+                    </div>
+                </div>
+
+                <div class="p-5 rounded-2xl explanation-box border-l-4 border-cyan-400 anim-item anim-delay-3">
+                    <div class="flex items-center gap-2 text-cyan-400 font-bold text-sm mb-1">
+                        <i class="fa-solid fa-lightbulb"></i> Шарҳи муфассал ва консепсияи слайд:
+                    </div>
+                    <p class="text-xs md:text-sm text-gray-300 leading-relaxed">
+                        Хулосаи асосии муаррифӣ: Мултимедия омили асосии рақобатпазирии бонкҳои муосир мебошад.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 12 (Author Profile) -->
+        <div class="slide-container" data-slide="12">
+            <div class="glass-card-3d rounded-3xl p-6 md:p-10 border border-cyan-500/30">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    
+                    <div class="lg:col-span-5 flex justify-center anim-item anim-delay-1">
+                        <div class="relative w-56 h-56 md:w-64 md:h-64 animate-float-3d">
+                            <div class="absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-500 via-purple-600 to-pink-500 blur-md opacity-70"></div>
+                            <div class="relative w-full h-full rounded-full border-4 border-slate-900 bg-slate-900 overflow-hidden shadow-2xl">
+                                <img src="images/profile.jpg" alt="Мирзозода Нуриддин" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Мирзозода+Нуриддин&background=0D8ABC&color=fff&size=256';">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="space-y-2 anim-item anim-delay-2">
+                            <span class="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-bold uppercase tracking-wider border border-purple-500/30">
+                                Муаррифии Муаллиф
+                            </span>
+                            <h2 class="text-3xl md:text-5xl font-extrabold text-white">
+                                Мирзозода Нуриддин
+                            </h2>
+                            <p class="text-cyan-400 font-semibold text-sm md:text-base">
+                                Донишҷӯи курси 2-юм | Ихтисоси Web-дизайнер ва графикаи компютерӣ[cite: 1]
+                            </p>
+                            <p class="text-gray-300 text-xs md:text-sm">
+                                Донишгоҳи давлатии тиҷорати Тоҷикистон[cite: 1]
+                            </p>
+                        </div>
+
+                        <div class="space-y-3 anim-item anim-delay-3 pt-2">
+                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Шабакаҳои иҷтимоӣ ва алоқа:</h4>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <a href="https://instagram.com/miiirzozodaa" target="_blank" class="glass-card-3d p-3 rounded-xl border border-pink-500/30 flex items-center gap-3 group">
+                                    <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-amber-500 via-pink-500 to-purple-600 flex items-center justify-center text-white text-xl">
+                                        <i class="fa-brands fa-instagram"></i>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] text-gray-400 block">Instagram</span>
+                                        <span class="text-xs font-bold text-white group-hover:text-pink-400 transition">@miiirzozodaa</span>
+                                    </div>
+                                </a>
+
+                                <a href="https://t.me/miiirzozoda" target="_blank" class="glass-card-3d p-3 rounded-xl border border-cyan-500/30 flex items-center gap-3 group">
+                                    <div class="w-10 h-10 rounded-lg bg-cyan-500 flex items-center justify-center text-white text-xl">
+                                        <i class="fa-brands fa-telegram"></i>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] text-gray-400 block">Telegram</span>
+                                        <span class="text-xs font-bold text-white group-hover:text-cyan-400 transition">@miiirzozoda</span>
+                                    </div>
+                                </a>
+
+                                <a href="mailto:mirzozoda272@gmail.com" class="glass-card-3d p-3 rounded-xl border border-red-500/30 flex items-center gap-3 group">
+                                    <div class="w-10 h-10 rounded-lg bg-red-500 flex items-center justify-center text-white text-xl">
+                                        <i class="fa-solid fa-envelope"></i>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] text-gray-400 block">Gmail</span>
+                                        <span class="text-xs font-bold text-white group-hover:text-red-400 transition truncate max-w-[130px] block">mirzozoda272@gmail.com</span>
+                                    </div>
+                                </a>
+
+                                <a href="https://github.com/nuriddinmirzozoda" target="_blank" class="glass-card-3d p-3 rounded-xl border border-purple-500/30 flex items-center gap-3 group">
+                                    <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-white text-xl border border-slate-700">
+                                        <i class="fa-brands fa-github"></i>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] text-gray-400 block">GitHub</span>
+                                        <span class="text-xs font-bold text-white group-hover:text-purple-400 transition">nuriddinmirzozoda</span>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 p-5 rounded-2xl explanation-box border-l-4 border-cyan-400 anim-item anim-delay-4">
+                    <div class="flex items-center gap-2 text-cyan-400 font-bold text-sm mb-1">
+                        <i class="fa-solid fa-lightbulb"></i> Шарҳи муфассал ва консепсияи слайд:
+                    </div>
+                    <p class="text-xs md:text-sm text-gray-300 leading-relaxed">
+                        Слайди охирин ба муаррифии шахсии таҳиягари лоиҳа бахшида шудааст. Дар ин ҷо сурати шахсӣ ва алоқаҳои фаъоли шабакаҳои иҷтимоӣ ҷойгир карда шудаанд[cite: 1].
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer Navigation Controls -->
+    <footer class="glass-nav fixed bottom-0 left-0 w-full z-40 px-4 py-3 flex items-center justify-between">
+        <button id="btnPrev" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-medium text-xs md:text-sm border border-slate-700 transition flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+            <i class="fa-solid fa-chevron-left"></i> Бозгашт
+        </button>
+
+        <div id="dotsContainer" class="hidden sm:flex items-center gap-1.5 overflow-x-auto max-w-[50%] px-2"></div>
+
+        <button id="btnNext" class="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-xs md:text-sm shadow-lg shadow-cyan-500/25 transition flex items-center gap-2">
+            Пеш <i class="fa-solid fa-chevron-right"></i>
+        </button>
+    </footer>
+
+    <!-- Overview Grid Modal -->
+    <div id="overviewModal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md hidden flex-col p-6 overflow-y-auto">
+        <div class="flex justify-between items-center mb-6 max-w-7xl mx-auto w-full">
+            <h3 class="text-xl font-bold text-cyan-400 flex items-center gap-2">
+                <i class="fa-solid fa-border-all"></i> Намоиши Умумии Слайдҳо
+            </h3>
+            <button id="btnCloseOverview" class="p-2 rounded-lg bg-slate-800 text-gray-300 hover:text-white border border-slate-700">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <div id="overviewGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-7xl mx-auto w-full"></div>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const totalSlides = 12;
+            let currentSlide = 1;
+            let isAutoplay = false;
+            let autoplayInterval = null;
+            let autoplayTime = 8000;
+            let progressInterval = null;
+
+            const slides = document.querySelectorAll('.slide-container');
+            const slideCounter = document.getElementById('slideCounter');
+            const btnPrev = document.getElementById('btnPrev');
+            const btnNext = document.getElementById('btnNext');
+            const btnAutoplay = document.getElementById('btnAutoplay');
+            const autoplayIcon = document.getElementById('autoplayIcon');
+            const autoplayProgress = document.getElementById('autoplayProgress');
+            const btnOverview = document.getElementById('btnOverview');
+            const overviewModal = document.getElementById('overviewModal');
+            const btnCloseOverview = document.getElementById('btnCloseOverview');
+            const overviewGrid = document.getElementById('overviewGrid');
+            const dotsContainer = document.getElementById('dotsContainer');
+            const btnFullscreen = document.getElementById('btnFullscreen');
+
+            const slideTitles = [
+                "Оғоз ва Табдилёбии Рақамӣ",
+                "Асосҳои Назариявӣ",
+                "Бонкдории Видеоӣ ва VTM",
+                "Мобил-Бонкинг ва Хароҷот",
+                "Чат-Ботҳо ва AI-Ассистентҳо",
+                "Биометрия ва Бехатарӣ",
+                "Маркетинг ва Digital Signage",
+                "Омӯзиш ва VR/AR",
+                "Муқоисаи Бонкҳо",
+                "Дурнамо ва Metaverse",
+                "Хулоса ва Тавсияҳо",
+                "Муаррифии Муаллиф"
+            ];
+
+            // 3D Tilt Effect
+            document.addEventListener('mousemove', (e) => {
+                const activeCard = document.querySelector('.slide-container.active .glass-card-3d');
+                if (!activeCard) return;
+
+                const xAxis = (window.innerWidth / 2 - e.pageX) / 45;
+                const yAxis = (window.innerHeight / 2 - e.pageY) / 45;
+
+                activeCard.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+            });
+
+            function initNavigationElements() {
+                dotsContainer.innerHTML = '';
+                overviewGrid.innerHTML = '';
+
+                for (let i = 1; i <= totalSlides; i++) {
+                    const dot = document.createElement('button');
+                    dot.className = `w-2.5 h-2.5 rounded-full transition-all duration-300 ${i === 1 ? 'bg-cyan-400 w-6' : 'bg-slate-700 hover:bg-slate-500'}`;
+                    dot.addEventListener('click', () => goToSlide(i));
+                    dotsContainer.appendChild(dot);
+
+                    const card = document.createElement('div');
+                    card.className = `glass-card-3d p-4 rounded-xl border border-slate-700/60 cursor-pointer hover:border-cyan-400/50 transition flex flex-col justify-between h-32 ${i === currentSlide ? 'ring-2 ring-cyan-400' : ''}`;
+                    card.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-cyan-400">Слайди ${i}</span>
+                            <i class="fa-solid fa-circle-play text-gray-500 text-xs"></i>
+                        </div>
+                        <h4 class="text-xs font-semibold text-gray-200 line-clamp-2">${slideTitles[i - 1]}</h4>
+                        <span class="text-[10px] text-gray-400">Барои гузаштан пахш кунед</span>
+                    `;
+                    card.addEventListener('click', () => {
+                        goToSlide(i);
+                        closeOverview();
+                    });
+                    overviewGrid.appendChild(card);
+                }
+            }
+
+            function updateSlideUI() {
+                slides.forEach((slide) => {
+                    const slideNum = parseInt(slide.getAttribute('data-slide'));
+                    if (slideNum === currentSlide) {
+                        slide.classList.add('active');
+                    } else {
+                        slide.classList.remove('active');
+                    }
+                });
+
+                slideCounter.textContent = `Слайди ${currentSlide} / ${totalSlides}`;
+
+                btnPrev.disabled = currentSlide === 1;
+                btnNext.innerHTML = currentSlide === totalSlides ? 
+                    'Охир <i class="fa-solid fa-flag-checkered"></i>' : 
+                    'Пеш <i class="fa-solid fa-chevron-right"></i>';
+
+                Array.from(dotsContainer.children).forEach((dot, idx) => {
+                    if (idx + 1 === currentSlide) {
+                        dot.className = 'w-6 h-2.5 rounded-full bg-cyan-400 transition-all duration-300';
+                    } else {
+                        dot.className = 'w-2.5 h-2.5 rounded-full bg-slate-700 hover:bg-slate-500 transition-all duration-300';
+                    }
+                });
+
+                if (isAutoplay) {
+                    startProgressAnimation();
+                }
+            }
+
+            function goToSlide(slideNum) {
+                if (slideNum < 1 || slideNum > totalSlides) return;
+                currentSlide = slideNum;
+                updateSlideUI();
+            }
+
+            function nextSlide() {
+                if (currentSlide < totalSlides) {
+                    currentSlide++;
+                } else {
+                    currentSlide = 1;
+                }
+                updateSlideUI();
+            }
+
+            function prevSlide() {
+                if (currentSlide > 1) {
+                    currentSlide--;
+                    updateSlideUI();
+                }
+            }
+
+            function startProgressAnimation() {
+                clearInterval(progressInterval);
+                autoplayProgress.style.width = '0%';
+                let startTime = Date.now();
+
+                progressInterval = setInterval(() => {
+                    let elapsedTime = Date.now() - startTime;
+                    let percentage = (elapsedTime / autoplayTime) * 100;
+                    if (percentage >= 100) {
+                        autoplayProgress.style.width = '100%';
+                        clearInterval(progressInterval);
+                    } else {
+                        autoplayProgress.style.width = `${percentage}%`;
+                    }
+                }, 50);
+            }
+
+            function toggleAutoplay() {
+                isAutoplay = !isAutoplay;
+                if (isAutoplay) {
+                    autoplayIcon.className = 'fa-solid fa-pause text-cyan-400';
+                    btnAutoplay.classList.add('border-cyan-400');
+                    startProgressAnimation();
+                    autoplayInterval = setInterval(nextSlide, autoplayTime);
+                } else {
+                    autoplayIcon.className = 'fa-solid fa-play';
+                    btnAutoplay.classList.remove('border-cyan-400');
+                    clearInterval(autoplayInterval);
+                    clearInterval(progressInterval);
+                    autoplayProgress.style.width = '0%';
+                }
+            }
+
+            function toggleFullscreen() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch((err) => {
+                        console.error(`Error fullscreen: ${err.message}`);
+                    });
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    }
+                }
+            }
+
+            function openOverview() {
+                initNavigationElements();
+                overviewModal.classList.remove('hidden');
+                overviewModal.classList.add('flex');
+            }
+
+            function closeOverview() {
+                overviewModal.classList.add('hidden');
+                overviewModal.classList.remove('flex');
+            }
+
+            btnNext.addEventListener('click', () => {
+                if (isAutoplay) toggleAutoplay();
+                nextSlide();
+            });
+
+            btnPrev.addEventListener('click', () => {
+                if (isAutoplay) toggleAutoplay();
+                prevSlide();
+            });
+
+            btnAutoplay.addEventListener('click', toggleAutoplay);
+            btnOverview.addEventListener('click', openOverview);
+            btnCloseOverview.addEventListener('click', closeOverview);
+            btnFullscreen.addEventListener('click', toggleFullscreen);
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === 'Space') {
+                    e.preventDefault();
+                    nextSlide();
+                } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    prevSlide();
+                } else if (e.key.toLowerCase() === 'f') {
+                    toggleFullscreen();
+                } else if (e.key === 'Escape') {
+                    closeOverview();
+                }
+            });
+
+            initNavigationElements();
+            updateSlideUI();
+
+            // Background Particle Canvas
+            const canvas = document.getElementById('particleCanvas');
+            const ctx = canvas.getContext('2d');
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            const particles = [];
+            const particleCount = Math.min(Math.floor(window.innerWidth / 20), 60);
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.vx = (Math.random() - 0.5) * 0.6;
+                    this.vy = (Math.random() - 0.5) * 0.6;
+                    this.radius = Math.random() * 2 + 1;
+                    this.color = Math.random() > 0.5 ? 'rgba(0, 242, 254, ' : 'rgba(127, 0, 255, ';
+                    this.alpha = Math.random() * 0.5 + 0.2;
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color + this.alpha + ')';
+                    ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+
+            function animateParticles() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+
+                        if (distance < 120) {
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = `rgba(0, 242, 254, ${0.15 * (1 - distance / 120)})`;
+                            ctx.lineWidth = 0.6;
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(animateParticles);
+            }
+
+            animateParticles();
+        });
+    </script>
+</body>
+</html>
